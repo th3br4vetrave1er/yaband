@@ -1,32 +1,37 @@
-weight = 75  # Вес
-height = 175  # Рост
-steps = 8462  # Количество пройденных за день шагов
-hours = 2  # Время движения в часах
-len_step_m = 0.65  # Длина одного шага в метрах
-transfer_coeff = 1000  # Коэффициент перевода  расстояния из метров в километры
+import datetime as dt
 
-dist = steps * len_step_m / transfer_coeff  # Напишите формулу расчёта
+FORMAT = '%H:%M:%S'
+WEIGHT = 75  # Вес
+HEIGHT = 175  # Рост
+K_1 = 0.035  # Коэфициент для подсчёта калорий
+K_2 = 0.029  # Коэфициент для подсчёта калорий
+STEP_M = 0.65  # Длина одного шага в метрах
+TRANS_KOEF = 1000  # Коэффициент перевода  расстояния из метров в километры
+storage_data = {}  # Словарь для хранения полученных данных.
+# steps and time будут из входящих кортежей (<time>, <steps>)
 
-mean_speed = dist / hours
-minutes = hours * 60
-
-spent_calories = (0.035 * weight + (mean_speed ** 2 / height) * 0.029 * weight) * minutes
-
+DISTANCE = steps * STEP_M / TRANS_KOEF  # Напишите формулу расчёта
+mean_speed = DISTANCE / hours
+MINUTES = hours * 60
+spent_calories = (0.035 * WEIGHT + (mean_speed ** 2 / HEIGHT) * 0.029 * WEIGHT) * MINUTES
 congratulations = ''
 
 
-if dist >= 6.5:
+
+
+
+if DISTANCE >= 6.5:
     congratulations = 'Отличный результат! Цель достигнута.'
-elif dist >= 3.9 and dist < 6.5:
+elif DISTANCE >= 3.9 and DISTANCE < 6.5:
     congratulations = 'Неплохо! День был продуктивным.'
-elif dist >= 2 and dist < 3.9:
+elif DISTANCE >= 2 and DISTANCE < 3.9:
     congratulations = 'Маловато, но завтра наверстаем!'
 else:
     congratulations = 'Лежать тоже полезно! Главное участие, а не победа!'
 
 output = f'''
 Сегодня вы прошли {steps} шагов.
-Пройденная дистанция {dist:.2f} км.
+Пройденная дистанция {DISTANCE:.2f} км.
 Вы сожгли {spent_calories:.2f} ккал.
 {congratulations}'''
 
