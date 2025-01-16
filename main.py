@@ -10,6 +10,7 @@ TRANS_KOEF = 1000  # Коэффициент перевода  расстояни
 storage_data = {}  # Словарь для хранения полученных данных.
 
 # steps and time будут из входящих кортежей (<time>, <steps>)
+time = None
 hours = None
 minutes = hours * 60
 steps = None
@@ -19,9 +20,8 @@ spent_calories = (
     0.035 * WEIGHT + (speed ** 2 / HEIGHT) * 0.029 * WEIGHT
     ) * minutes
 
+# Выбор вида поздравления
 congratulations = ''
-
-
 if distance >= 6.5:
     congratulations = 'Отличный результат! Цель достигнута.'
 elif distance >= 3.9 and distance < 6.5:
@@ -37,11 +37,19 @@ output = f'''
 Вы сожгли {spent_calories:.2f} ккал.
 {congratulations}'''
 
-print(output)
+
+# Функции
 
 
 def check_correct_data(data):
-    pass
+    if (
+        len(data) != 2
+        or not data
+    ):
+        return False
+    else:
+        return True
+
     """Проверка корректности полученного пакета."""
     # Если длина пакета отлична от 2
     # или один из элементов пакета имеет пустое значение -
