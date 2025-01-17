@@ -17,7 +17,7 @@ steps = None
 distance = steps * STEP_M / TRANS_KOEF  # Напишите формулу расчёта
 speed = distance / hours
 spent_calories = (
-    0.035 * WEIGHT + (speed ** 2 / HEIGHT) * 0.029 * WEIGHT
+    K_1 * WEIGHT + (speed ** 2 / HEIGHT) * K_2 * WEIGHT
     ) * minutes
 
 # Выбор вида поздравления
@@ -42,9 +42,11 @@ output = f'''
 
 
 def check_correct_data(data):
+    if len(data) != 2:
+        return False
     if (
-        len(data) != 2
-        or not data
+        not data[0]
+        or not data[1]
     ):
         return False
     else:
@@ -57,8 +59,14 @@ def check_correct_data(data):
 
 
 def check_correct_time(time):
-    pass
-    """Проверка корректности параметра времени."""
+    time = dt.datetime.strptime(time, FORMAT)
+    if len(storage_data) > 0:
+        last_time = max(storage_data.keys())
+        if time <= last_time:
+            return False
+    else:
+        return True
+        """Проверка корректности параметра времени."""
     # Если словарь для хранения не пустой
     # и значение времени, полученное в аргументе,
     # меньше или равно самому большому значению ключа в словаре,
@@ -67,7 +75,9 @@ def check_correct_time(time):
 
 
 def get_step_day(steps):
-    pass
+    last_steps = sum(storage_data.values())
+    total_steps = last_steps + steps
+    return total_steps
     """Получить количество пройденных шагов за этот день."""
     # Посчитайте все шаги, записанные в словарь storage_data,
     # прибавьте к ним значение из последнего пакета
@@ -75,13 +85,16 @@ def get_step_day(steps):
 
 
 def get_distance(steps):
-    pass
+    steps_in_km = steps * STEP_M / TRANS_KOEF
+    return steps_in_km
     """Получить дистанцию пройденного пути в км."""
     # Посчитайте дистанцию в километрах,
     # исходя из количества шагов и длины шага.
 
 
 def get_spent_calories(dist, current_time):
-    pass
+    spent_calories = (
+        K_1 * WEIGHT()
+    )
     """Получить значения потраченных калорий."""
     # В уроке «Последовательности» вы написали формулу расчета калорий.
