@@ -9,35 +9,6 @@ STEP_M = 0.65  # Длина одного шага в метрах
 TRANS_KOEF = 1000  # Коэффициент перевода  расстояния из метров в километры
 storage_data = {}  # Словарь для хранения полученных данных.
 
-# steps and time будут из входящих кортежей (<time>, <steps>)
-time = None
-hours = None
-minutes = hours * 60
-steps = None
-distance = steps * STEP_M / TRANS_KOEF  # Напишите формулу расчёта
-speed = distance / hours
-spent_calories = (
-    K_1 * WEIGHT + (speed ** 2 / HEIGHT) * K_2 * WEIGHT
-    ) * minutes
-
-# Выбор вида поздравления
-congratulations = ''
-if distance >= 6.5:
-    congratulations = 'Отличный результат! Цель достигнута.'
-elif distance >= 3.9 and distance < 6.5:
-    congratulations = 'Неплохо! День был продуктивным.'
-elif distance >= 2 and distance < 3.9:
-    congratulations = 'Маловато, но завтра наверстаем!'
-else:
-    congratulations = 'Лежать тоже полезно! Главное участие, а не победа!'
-
-output = f'''
-Сегодня вы прошли {steps} шагов.
-Пройденная дистанция {distance:.2f} км.
-Вы сожгли {spent_calories:.2f} ккал.
-{congratulations}'''
-
-
 # Функции
 
 
@@ -60,8 +31,11 @@ def check_correct_data(data):
 
 def check_correct_time(time):
     time = dt.datetime.strptime(time, FORMAT)
-    if len(storage_data) > 0:
+    if storage_data:
         last_time = max(storage_data.keys())
+        last_time = dt.datetime.strptime(
+            last_time, FORMAT
+        )
         if time <= last_time:
             return False
     else:
@@ -74,27 +48,101 @@ def check_correct_time(time):
     # Иначе - True
 
 
+def get_distance(steps):
+    """
+    Получить дистанцию пройденного пути в км,
+    исходя из количества шагов и длины шага.
+    """
+    dist_in_km = steps * STEP_M / TRANS_KOEF
+    return dist_in_km
+
+
 def get_step_day(steps):
+    """
+    Получить количество пройденных шагов за этот день.
+    Посчитайте все шаги, записанные в словарь storage_data,
+    прибавьте к ним значение из последнего пакета
+    и верните эту сумму.
+    """
     last_steps = sum(storage_data.values())
     total_steps = last_steps + steps
     return total_steps
-    """Получить количество пройденных шагов за этот день."""
-    # Посчитайте все шаги, записанные в словарь storage_data,
-    # прибавьте к ним значение из последнего пакета
-    # и верните  эту сумму.
-
-
-def get_distance(steps):
-    steps_in_km = steps * STEP_M / TRANS_KOEF
-    return steps_in_km
-    """Получить дистанцию пройденного пути в км."""
-    # Посчитайте дистанцию в километрах,
-    # исходя из количества шагов и длины шага.
 
 
 def get_spent_calories(dist, current_time):
+    current_dt = dt.datetime.strptime(current_time, FORMAT)
+    hour = current_dt.hour
+    minute = current_dt.minute
+    minutes = hour * 60 + minute
+
+    if hour == 0:
+        speed = 0
+    else:
+        speed = dist / hour
+
     spent_calories = (
-        K_1 * WEIGHT()
-    )
+        K_1 * WEIGHT +
+        (speed**2 / HEIGHT) * K_2 * WEIGHT
+    ) * minutes
+    return spent_calories
     """Получить значения потраченных калорий."""
     # В уроке «Последовательности» вы написали формулу расчета калорий.
+
+
+def show_message(current_time, step_day, dist, calories):
+    # Определяем сообщение в зависимости от dist
+    if dist >= 6.5:
+        congrats = 'Отличный результат! Цель достигнута.'
+    elif dist >= 3.9:
+        congrats = 'Неплохо! День был продуктивным.'
+    elif dist >= 2:
+        congrats = 'Маловато, но завтра наверстаем!'
+    else:
+        congrats = 'Лежать тоже полезно! Главное участие, а не победа!'
+
+    print(f'''
+Время: {current_time}.
+Количество шагов за сегодня: {step_day}.
+Дистанция составила {dist:.2f} км.
+Вы сожгли {calories:.2f} ккал.
+{congrats}
+''')
+
+
+def accept_package(data):
+    """Точка входа в программу.
+    Принимает пакет данных (<time_str>, <steps>),
+    проверяет корректность, записывает в словарь,
+    считает статистику, выводит сообщение и возвращает storage_data."""
+    # 1. Проверяем корректность пакета.
+    if not check_correct_data(data):
+        return storage_data
+
+    # 2. Распаковываем кортеж: (time_str, steps).
+    time_str, steps = data
+
+    # 3. Проверяем корректность времени.
+    if not check_correct_time(time_str):
+        return storage_data
+
+    # 4. Записываем данные в словарь.
+    storage_data[time_str] = steps
+
+    # 5. Суммируем шаги за день.
+    step_day = get_step_day(steps)
+
+    # 6. Получаем дистанцию.
+    dist = get_distance(step_day)
+
+    # 7. Считаем калории.
+    calories = get_spent_calories(dist, time_str)
+
+    # 8. Выводим сообщение.
+    show_message(time_str, step_day, dist, calories)
+
+    # 9. Возвращаем текущие данные.
+    return storage_data
+
+
+result = accept_package(('09:36:02', 5700))
+print(result)
